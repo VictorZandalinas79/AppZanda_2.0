@@ -41,7 +41,7 @@ export function TeamImport({ team, onImport }: TeamImportProps) {
         className="flex items-center gap-2 px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-md"
       >
         <Upload size={16} />
-        Import {team === 'home' ? 'Home' : 'Away'} Team
+        Importar Equipo {team === 'home' ? 'Local' : 'Visitante'}
       </button>
     </div>
   );

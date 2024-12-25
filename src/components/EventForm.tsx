@@ -12,26 +12,49 @@ export function EventForm({ team, players, onAddEvent, currentMinute }: EventFor
   const [eventType, setEventType] = useState('goal');
   const [player, setPlayer] = useState('');
   const [assistBy, setAssistBy] = useState('');
+  const [playerIn, setPlayerIn] = useState('');
+  const [playerOut, setPlayerOut] = useState('');
+  const [playerNumber, setPlayerNumber] = useState('');
+
+  const isOpposingTeam = team === 'away';
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const selectedPlayer = players.find(p => p.number.toString() === player);
-    if (!selectedPlayer) return;
+
+    let eventPlayer: Player;
+    if (isOpposingTeam) {
+      eventPlayer = {
+        number: parseInt(playerNumber),
+        name: `Jugador ${playerNumber}`,
+      };
+    } else {
+      eventPlayer = players.find(p => p.number.toString() === player)!;
+    }
 
     const event = {
       type: eventType,
-      player: selectedPlayer,
+      player: eventPlayer,
       team,
       minute: currentMinute,
       timestamp: Date.now(),
       details: eventType === 'goal' && assistBy ? {
         assistBy: players.find(p => p.number.toString() === assistBy),
+      } : eventType === 'substitution' ? {
+        playerIn: isOpposingTeam ? 
+          { number: parseInt(playerIn), name: `Jugador ${playerIn}` } :
+          players.find(p => p.number.toString() === playerIn),
+        playerOut: isOpposingTeam ?
+          { number: parseInt(playerOut), name: `Jugador ${playerOut}` } :
+          players.find(p => p.number.toString() === playerOut),
       } : undefined,
     };
 
     onAddEvent(event);
     setPlayer('');
     setAssistBy('');
+    setPlayerIn('');
+    setPlayerOut('');
+    setPlayerNumber('');
   };
 
   return (
@@ -42,37 +65,130 @@ export function EventForm({ team, players, onAddEvent, currentMinute }: EventFor
           onChange={(e) => setEventType(e.target.value)}
           className="w-full p-2 border rounded"
         >
-          <option value="goal">Goal</option>
-          <option value="yellowCard">Yellow Card</option>
-          <option value="redCard">Red Card</option>
-          <option value="substitution">Substitution</option>
+          <option value="goal">Gol</option>
+          <option value="yellowCard">Tarjeta Amarilla</option>
+          <option value="redCard">Tarjeta Roja</option>
+          <option value="substitution">Sustitución</option>
         </select>
       </div>
 
-      <div>
-        <select
-          value={player}
-          onChange={(e) => setPlayer(e.target.value)}
-          className="w-full p-2 border rounded"
-          required
-        >
-          <option value="">Select Player</option>
-          {players.map((p) => (
-            <option key={p.number} value={p.number}>
-              #{p.number} - {p.name}
-            </option>
-          ))}
-        </select>
-      </div>
+      {isOpposingTeam ? (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Dorsal del Jugador
+          </label>
+          <input
+            type="number"
+            value={playerNumber}
+            onChange={(e) => setPlayerNumber(e.target.value)}
+            className="w-full p-2 border rounded"
+            required
+            min="1"
+            max="99"
+          />
+        </div>
+      ) : (
+        <div>
+          <select
+            value={player}
+            onChange={(e) => setPlayer(e.target.value)}
+            className="w-full p-2 border rounded"
+            required
+          >
+            <option value="">Seleccionar Jugador</option>
+            {players.map((p) => (
+              <option key={p.number} value={p.number}>
+                #{p.number} - {p.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
-      {eventType === 'goal' && (
+      {eventType === 'substitution' && (
+        <>
+          {isOpposingTeam ? (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Dorsal del Jugador que Entra
+                </label>
+                <input
+                  type="number"
+                  value={playerIn}
+                  onChange={(e) => setPlayerIn(e.target.value)}
+                  className="w-full p-2 border rounded"
+                  required
+                  min="1"
+                  max="99"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Dorsal del Jugador que Sale
+                </label>
+                <input
+                  type="number"
+                  value={playerOut}
+                  onChange={(e) => setPlayerOut(e.target.value)}
+                  className="w-full p-2 border rounded"
+                  required
+                  min="1"
+                  max="99"
+                />
+              </div>
+            </>
+          ) : (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Jugador que Entra
+                </label>
+                <select
+                  value={playerIn}
+                  onChange={(e) => setPlayerIn(e.target.value)}
+                  className="w-full p-2 border rounded"
+                  required
+                >
+                  <option value="">Seleccionar Jugador</option>
+                  {players.map((p) => (
+                    <option key={p.number} value={p.number}>
+                      #{p.number} - {p.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Jugador que Sale
+                </label>
+                <select
+                  value={playerOut}
+                  onChange={(e) => setPlayerOut(e.target.value)}
+                  className="w-full p-2 border rounded"
+                  required
+                >
+                  <option value="">Seleccionar Jugador</option>
+                  {players.map((p) => (
+                    <option key={p.number} value={p.number}>
+                      #{p.number} - {p.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </>
+          )}
+        </>
+      )}
+
+      {eventType === 'goal' && !isOpposingTeam && (
         <div>
           <select
             value={assistBy}
             onChange={(e) => setAssistBy(e.target.value)}
             className="w-full p-2 border rounded"
           >
-            <option value="">Assist By (Optional)</option>
+            <option value="">Asistencia Por (Opcional)</option>
             {players.map((p) => (
               <option key={p.number} value={p.number}>
                 #{p.number} - {p.name}
@@ -86,7 +202,7 @@ export function EventForm({ team, players, onAddEvent, currentMinute }: EventFor
         type="submit"
         className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
       >
-        Add Event
+        Añadir Evento
       </button>
     </form>
   );

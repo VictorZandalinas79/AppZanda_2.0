@@ -1,5 +1,5 @@
 import React from 'react';
-import { Timer as TimerIcon, Pause } from 'lucide-react';
+import { Timer as TimerIcon, Pause, RotateCcw } from 'lucide-react';
 import { useTimer } from '../hooks/useTimer';
 import type { MatchPeriod } from '../types/match';
 
@@ -8,18 +8,19 @@ interface TimerProps {
   startTime: number;
   period: MatchPeriod;
   onToggle: () => void;
+  onReset: () => void;
 }
 
-export function Timer({ isActive, startTime, period, onToggle }: TimerProps) {
+export function Timer({ isActive, startTime, period, onToggle, onReset }: TimerProps) {
   const timer = useTimer(isActive, startTime);
 
   const getPeriodLabel = (period: MatchPeriod) => {
     switch (period) {
-      case 'first': return '1st Half';
-      case 'second': return '2nd Half';
-      case 'extraFirst': return 'ET 1st Half';
-      case 'extraSecond': return 'ET 2nd Half';
-      case 'finished': return 'Full Time';
+      case 'first': return '1ª Parte';
+      case 'second': return '2ª Parte';
+      case 'extraFirst': return 'Prórroga 1ª Parte';
+      case 'extraSecond': return 'Prórroga 2ª Parte';
+      case 'finished': return 'Fin del Partido';
       default: return '';
     }
   };
@@ -30,6 +31,13 @@ export function Timer({ isActive, startTime, period, onToggle }: TimerProps) {
         {getPeriodLabel(period)}
       </div>
       <div className="flex items-center gap-4">
+        <button
+          onClick={onReset}
+          className="p-2 rounded-full hover:bg-gray-200 transition-colors"
+          disabled={period === 'finished'}
+        >
+          <RotateCcw size={24} />
+        </button>
         <button
           onClick={onToggle}
           className="p-2 rounded-full hover:bg-gray-200 transition-colors"
